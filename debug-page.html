@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏网站调试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .log-entry {
+            padding: 4px 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .log-entry.error {
+            background-color: #ffeeee;
+            color: #dd0000;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">游戏功能调试页面</h1>
+
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <h2 class="text-xl font-bold mb-4">测试游戏控制器</h2>
+            <div class="flex space-x-4">
+                <button id="test-modal" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                    测试游戏弹窗
+                </button>
+                <button id="check-controller" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
+                    检查游戏控制器
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <h2 class="text-xl font-bold mb-4">原始网站按钮测试</h2>
+            <div class="flex flex-col sm:flex-row space-x-0 sm:space-x-4 space-y-4 sm:space-y-0">
+                <button id="play-now" class="bg-white text-blue-500 border border-blue-500 font-bold py-3 px-8 rounded-full hover:bg-blue-500 hover:text-white transition">
+                    立即玩
+                </button>
+                <button id="learn-more" class="bg-transparent border-2 border-blue-500 text-blue-500 font-bold py-3 px-8 rounded-full hover:bg-blue-500 hover:text-white transition">
+                    了解更多
+                </button>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <h2 class="text-xl font-bold mb-2">调试日志</h2>
+            <div class="flex justify-end mb-2">
+                <button id="clear-log" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-3 py-1 rounded text-sm">
+                    清除日志
+                </button>
+            </div>
+            <div id="debug-log" class="bg-gray-50 border border-gray-200 rounded h-80 overflow-y-auto p-2 font-mono text-sm">
+                <div class="log-entry">调试日志已初始化...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 日志功能
+    const logger = {
+        logElement: document.getElementById('debug-log'),
+        
+        log: function(message, data) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            let logMessage = `[${new Date().toLocaleTimeString()}] ${message}`;
+            if (data !== undefined) {
+                if (typeof data === 'object') {
+                    logMessage += ` ${JSON.stringify(data)}`;
+                } else {
+                    logMessage += ` ${data}`;
+                }
+            }
+            
+            entry.textContent = logMessage;
+            this.logElement.appendChild(entry);
+            this.logElement.scrollTop = this.logElement.scrollHeight;
+            console.log(message, data || '');
+        },
+        
+        error: function(message, error) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry error';
+            
+            let logMessage = `[${new Date().toLocaleTimeString()}] 错误: ${message}`;
+            if (error) {
+                logMessage += ` - ${error.message || error}`;
+            }
+            
+            entry.textContent = logMessage;
+            this.logElement.appendChild(entry);
+            this.logElement.scrollTop = this.logElement.scrollHeight;
+            console.error(message, error || '');
+        },
+        
+        clear: function() {
+            this.logElement.innerHTML = '';
+            this.log('日志已清除');
+        }
+    };
+
+    // 模拟游戏控制器
+    window.gameController = {
+        gameData: {
+            'bru-boegie': {
+                name: 'Bru & Boegie: Get da MILK!',
+                description: '一个手绘2D超现实主义喜剧点击冒险游戏。扮演Bru，一个奇怪的沉默寡言的人，他的任务是为咖啡获取牛奶。',
+                url: 'https://mikdog.itch.io/bru-boegie-get-da-milk',
+                controls: '左键点击：交互/使用\n右键点击：检查\nESC：暂停/选项\nF：显示热点\nD：Dab（学习后）\nTab：跳过过场动画'
+            },
+            'monster-survivors': {
+                name: 'Monster Survivors',
+                description: '一款刺激的生存动作游戏，你需要控制角色对抗无尽的怪物浪潮。',
+                url: 'https://example.com/game2',
+                controls: 'WASD：移动角色'
+            }
+        },
+        startGame: function(gameId) {
+            logger.log('游戏控制器: 开始游戏', gameId);
+            return this.gameData[gameId];
+        },
+        toggleAudio: function() {
+            logger.log('游戏控制器: 切换音频');
+            return false;
+        }
+    };
+
+    // 测试游戏弹窗
+    function testGameModal() {
+        logger.log('开始测试游戏弹窗');
+        
+        try {
+            // 创建游戏选择弹窗
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 transform transition-all">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">选择游戏开始</h3>
+                        <button class="text-gray-500" id="close-modal">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-blue-100 rounded-lg p-4 text-center cursor-pointer ring-2 ring-blue-500" data-game="bru-boegie">
+                            <h4 class="font-bold">Bru & Boegie</h4>
+                        </div>
+                        <div class="bg-blue-100 rounded-lg p-4 text-center cursor-pointer" data-game="monster-survivors">
+                            <h4 class="font-bold">Monster Survivors</h4>
+                        </div>
+                    </div>
+                    <div id="game-info" class="bg-gray-100 p-4 rounded-lg mb-4">
+                        <h4 class="font-bold mb-2">游戏说明</h4>
+                        <p class="text-gray-700 text-sm mb-2" id="game-description"></p>
+                        <p class="text-gray-600 text-xs italic" id="game-controls"></p>
+                    </div>
+                    <button id="start-button" class="w-full bg-blue-500 text-white py-3 rounded-lg">
+                        开始游戏
+                    </button>
+                </div>
+            `;
+            
+            logger.log('模态框创建成功');
+            document.body.appendChild(modal);
+            logger.log('模态框已添加到DOM');
+            
+            // 关闭弹窗功能
+            document.getElementById('close-modal').addEventListener('click', function() {
+                logger.log('关闭按钮被点击');
+                modal.classList.add('opacity-0');
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                    logger.log('模态框已关闭');
+                }, 300);
+            });
+            
+            // 获取元素
+            logger.log('获取模态框内的元素');
+            const gameOptions = modal.querySelectorAll('[data-game]');
+            const gameInfo = document.getElementById('game-info');
+            const gameDescription = document.getElementById('game-description');
+            const gameControls = document.getElementById('game-controls');
+            
+            logger.log('找到游戏选项数量', gameOptions.length);
+            
+            // 默认选择第一个游戏并显示信息
+            logger.log('设置默认游戏信息');
+            try {
+                const firstGame = gameOptions[0];
+                const firstGameId = firstGame.getAttribute('data-game');
+                logger.log('第一个游戏ID', firstGameId);
+                
+                const firstGameData = window.gameController.gameData[firstGameId];
+                logger.log('第一个游戏数据', firstGameData.name);
+                
+                // 显示第一个游戏的信息
+                gameDescription.textContent = firstGameData.description;
+                gameControls.textContent = '操作: ' + firstGameData.controls;
+                
+                // 更新开始按钮文本
+                const startButton = document.getElementById('start-button');
+                startButton.textContent = `开始 ${firstGameData.name}`;
+                
+                logger.log('默认游戏信息设置完成');
+            } catch (error) {
+                logger.error('设置默认游戏信息出错', error);
+            }
+            
+            // 添加游戏选项点击事件
+            logger.log('添加游戏选项点击事件');
+            gameOptions.forEach((option) => {
+                option.addEventListener('click', function() {
+                    logger.log('游戏选项被点击', this.getAttribute('data-game'));
+                    
+                    // 添加选中效果
+                    gameOptions.forEach(opt => opt.classList.remove('ring-2', 'ring-blue-500'));
+                    this.classList.add('ring-2', 'ring-blue-500');
+                    
+                    // 获取游戏数据
+                    const gameId = this.getAttribute('data-game');
+                    const gameData = window.gameController.gameData[gameId];
+                    logger.log('选中的游戏', gameData.name);
+                    
+                    // 显示游戏信息
+                    if (gameData) {
+                        gameInfo.classList.remove('hidden');
+                        gameDescription.textContent = gameData.description;
+                        gameControls.textContent = '操作: ' + gameData.controls;
+                        
+                        // 更新开始按钮文本
+                        const startButton = document.getElementById('start-button');
+                        startButton.textContent = `开始 ${gameData.name}`;
+                    }
+                });
+            });
+            
+            // 开始游戏按钮功能
+            logger.log('添加开始游戏按钮事件');
+            const startButton = document.getElementById('start-button');
+            startButton.addEventListener('click', function() {
+                logger.log('开始游戏按钮被点击');
+                
+                // 查找被选中的游戏
+                const selectedGame = modal.querySelector('.ring-2.ring-blue-500');
+                
+                if (selectedGame) {
+                    const gameId = selectedGame.getAttribute('data-game');
+                    const gameData = window.gameController.gameData[gameId];
+                    logger.log('选中的游戏', gameData.name);
+                    
+                    alert('游戏即将启动: ' + gameData.name);
+                    
+                    // 移除模态框
+                    document.body.removeChild(modal);
+                    logger.log('模态框已关闭');
+                } else {
+                    logger.log('没有选中的游戏');
+                    alert('请先选择一个游戏');
+                }
+            });
+            
+        } catch (error) {
+            logger.error('测试游戏弹窗出错', error);
+        }
+    }
+
+    // 检查游戏控制器
+    function checkGameController() {
+        logger.log('检查游戏控制器');
+        
+        try {
+            logger.log('游戏控制器存在', !!window.gameController);
+            logger.log('游戏数据', Object.keys(window.gameController.gameData));
+            
+            // 检查bru-boegie数据
+            const bruData = window.gameController.gameData['bru-boegie'];
+            if (bruData) {
+                logger.log('Bru & Boegie 数据检查', {
+                    name: bruData.name,
+                    url: bruData.url
+                });
+            } else {
+                logger.error('未找到 Bru & Boegie 游戏数据');
+            }
+            
+            // 测试方法
+            logger.log('测试 startGame 方法', typeof window.gameController.startGame);
+            logger.log('测试 toggleAudio 方法', typeof window.gameController.toggleAudio);
+            
+        } catch (error) {
+            logger.error('检查游戏控制器出错', error);
+        }
+    }
+
+    // 模拟原始网站的立即玩按钮功能
+    function simulatePlayNow() {
+        logger.log('模拟原始网站立即玩按钮点击');
+        
+        try {
+            // 获取页面中的header元素
+            const header = document.querySelector('header');
+            if (!header) {
+                logger.error('未找到header元素');
+                return;
+            }
+            logger.log('找到header元素');
+            
+            // 查找rounded-full按钮
+            const buttons = header.querySelectorAll('.rounded-full');
+            logger.log('在header中找到rounded-full按钮数量', buttons.length);
+            
+            if (buttons.length >= 1) {
+                logger.log('第一个按钮文本', buttons[0].textContent.trim());
+                // 这里可以触发testGameModal()来模拟实际效果
+                testGameModal();
+            } else {
+                logger.error('未找到足够的按钮');
+            }
+        } catch (error) {
+            logger.error('模拟立即玩按钮出错', error);
+        }
+    }
+
+    // 事件监听
+    document.addEventListener('DOMContentLoaded', function() {
+        logger.log('页面已加载完成');
+        
+        // 清除日志按钮
+        document.getElementById('clear-log').addEventListener('click', function() {
+            logger.clear();
+        });
+        
+        // 测试按钮
+        document.getElementById('test-modal').addEventListener('click', testGameModal);
+        document.getElementById('check-controller').addEventListener('click', checkGameController);
+        
+        // 原始按钮模拟
+        document.getElementById('play-now').addEventListener('click', simulatePlayNow);
+        document.getElementById('learn-more').addEventListener('click', function() {
+            logger.log('了解更多按钮被点击');
+        });
+    });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏按钮调试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+    <header>
+        <div class="max-w-3xl mx-auto text-center">
+            <h1 class="text-2xl font-bold mb-6">按钮测试</h1>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button id="playButton" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-full">
+                    立即玩
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="log" class="mt-8 p-4 bg-gray-100 rounded min-h-[200px]"></div>
+
+    <script>
+    // 日志辅助函数
+    function log(message) {
+        const logDiv = document.getElementById('log');
+        const entry = document.createElement('div');
+        entry.textContent = message;
+        logDiv.appendChild(entry);
+        console.log(message);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        log('页面已加载');
+        
+        // 获取按钮元素
+        const playButton = document.getElementById('playButton');
+        
+        if (playButton) {
+            log('找到了立即玩按钮');
+            
+            // 添加点击事件
+            playButton.addEventListener('click', function() {
+                log('按钮被点击了!');
+                
+                try {
+                    // 创建一个简单的模态框
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                    modal.innerHTML = `
+                        <div class="bg-white rounded-xl p-6 w-96 mx-4">
+                            <h3 class="text-xl font-bold mb-4">测试模态框</h3>
+                            <p class="mb-4">这是一个测试模态框,验证是否能正常显示。</p>
+                            <button id="closeModal" class="w-full bg-blue-500 text-white py-2 rounded">关闭</button>
+                        </div>
+                    `;
+                    
+                    log('模态框创建成功');
+                    document.body.appendChild(modal);
+                    log('模态框已添加到页面');
+                    
+                    // 关闭按钮功能
+                    document.getElementById('closeModal').addEventListener('click', function() {
+                        log('关闭按钮被点击');
+                        document.body.removeChild(modal);
+                        log('模态框已关闭');
+                    });
+                } catch (error) {
+                    log('错误: ' + error.message);
+                    console.error(error);
+                }
+            });
+        } else {
+            log('未找到立即玩按钮!');
+        }
+    });
+    </script>
+</body>
+</html> 
